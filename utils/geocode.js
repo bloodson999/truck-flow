@@ -20,6 +20,31 @@ function areaFallback(place) {
   return [`${city.trim()}, ${state.trim()} ${zip}`, `${state.trim()} ${zip}`];
 }
 
+function coordinatesFromResult(result) {
+  if (!result) return null;
+
+  if (result.lat && result.lon) {
+    return { lat: Number(result.lat), lng: Number(result.lon) };
+  }
+
+  const coordinates = result.geometry?.coordinates;
+  if (Array.isArray(coordinates) && coordinates.length >= 2) {
+    return { lat: Number(coordinates[1]), lng: Number(coordinates[0]) };
+  }
+
+  return null;
+}
+
+async function searchPhoton(query) {
+  const res = await axios.get("https://photon.komoot.io/api/", {
+    params: { q: query, limit: 1 },
+    headers: { "User-Agent": "truckflow-app/1.0" },
+    timeout: 10000
+  });
+
+  return coordinatesFromResult(res.data?.features?.[0]);
+}
+
 async function geocode(place) {
   if (!place || !String(place).trim()) {
     throw new Error("Place is required");
@@ -28,20 +53,35 @@ async function geocode(place) {
   const queries = [...new Set([...addressQueries(place), ...areaFallback(place)])];
 
   for (const query of queries) {
-    const res = await axios.get("https://nominatim.openstreetmap.org/search", {
-      params: { format: "json", limit: 1, q: query, countrycodes: "us" },
-      headers: { "User-Agent": "truckflow-app/1.0" },
-      timeout: 10000
-    });
+    try {
+      const res = await axios.get("https://nominatim.openstreetmap.org/search", {
+        params: { format: "json", limit: 1, q: query, countrycodes: "us" },
+        headers: { "User-Agent": "truckflow-app/1.0" },
+        timeout: 10000
+      });
+      const result = coordinatesFromResult(res.data?.[0]);
 
-    if (Array.isArray(res.data) && res.data.length > 0) {
-      const result = {
-        lat: Number(res.data[0].lat),
-        lng: Number(res.data[0].lon)
-      };
+      if (result) {
+        console.log(`📍 Geocoded "${place}" → ${result.lat}, ${result.lng}`);
+        return result;
+      }
+    } catch (error) {
+      if (error.response?.status !== 429) throw error;
+      console.log("⚠️ Nominatim rate-limited, trying alternate geocoder");
+      break;
+    }
+  }
 
-      console.log(`📍 Geocoded "${place}" → ${result.lat}, ${result.lng}`);
-      return result;
+  for (const query of queries) {
+    try {
+      const result = await searchPhoton(query);
+      if (result) {
+        console.log(`📍 Alternate geocoder resolved "${place}" → ${result.lat}, ${result.lng}`);
+        return result;
+      }
+    } catch (error) {
+      if (error.response?.status === 429) continue;
+      throw error;
     }
   }
 
