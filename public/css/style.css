@@ -958,6 +958,30 @@ select option {
   text-align: left;
 }
 
+.destination-info {
+  display: grid;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--primary-2);
+  border-radius: var(--radius-sm);
+  background: rgba(31, 143, 255, 0.1);
+}
+
+.destination-info .eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+.destination-info strong {
+  color: #ffffff;
+  font-size: 1.08rem;
+}
+
+.destination-info span:last-child {
+  color: var(--text-soft);
+}
+
 .track-hero-image img {
   width: 100%;
   height: 280px;
