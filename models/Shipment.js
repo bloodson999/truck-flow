@@ -12,6 +12,8 @@ const shipmentSchema = new mongoose.Schema(
   {
     trackingId: { type: String, required: true, unique: true, index: true },
 
+    senderName: { type: String, default: "" },
+    receiverName: { type: String, default: "" },
     pickupText: { type: String, required: true },
     dropText: { type: String, required: true },
 

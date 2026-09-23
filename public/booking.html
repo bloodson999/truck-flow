@@ -31,6 +31,8 @@
       <h2>Shipment Details</h2>
 
       <form id="bookingForm">
+        <input id="senderName" type="text" placeholder="Sender Name" required>
+        <input id="receiverName" type="text" placeholder="Receiver Name" required>
         <input id="pickup" type="text" placeholder="Pickup Location" required>
         <input id="drop" type="text" placeholder="Drop Location" required>
         <input id="weight" type="number" placeholder="Weight (kg)" required>
@@ -183,13 +185,15 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
 
   const msg = document.getElementById("msg");
 
+  const senderName = document.getElementById("senderName").value.trim();
+  const receiverName = document.getElementById("receiverName").value.trim();
   const pickup = document.getElementById("pickup").value.trim();
   const drop = document.getElementById("drop").value.trim();
   const weight = document.getElementById("weight").value;
   const truckType = document.getElementById("truckType").value;
 
-  if (!pickup || !drop) {
-    msg.innerText = "❌ Pickup and drop are required";
+  if (!senderName || !receiverName || !pickup || !drop) {
+    msg.innerText = "❌ Sender name, receiver name, pickup, and drop are required";
     msg.style.color = "red";
     return;
   }
@@ -198,7 +202,7 @@ document.getElementById("bookingForm").addEventListener("submit", async (e) => {
     const res = await fetch("/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ pickup, drop, weight, truckType })
+      body: JSON.stringify({ senderName, receiverName, pickup, drop, weight, truckType })
     });
 
     const data = await res.json();

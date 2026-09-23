@@ -35,6 +35,8 @@ function formatShipment(shipment) {
   return {
     id: shipment.trackingId,
     trackingId: shipment.trackingId,
+    senderName: shipment.senderName || "",
+    receiverName: shipment.receiverName || "",
     pickup: shipment.pickupText,
     drop: shipment.dropText,
     pickupPoint: shipment.pickup,
@@ -136,11 +138,13 @@ app.post("/admin/logout", auth, (req, res) => {
 app.post("/create", async (req, res) => {
   try {
     const trackingId = "TRK" + Date.now();
+    const senderName = String(req.body.senderName || "").trim();
+    const receiverName = String(req.body.receiverName || "").trim();
     const pickupText = String(req.body.pickup || "").trim();
     const dropText = String(req.body.drop || "").trim();
 
-    if (!pickupText || !dropText) {
-      return res.status(400).json({ success: false, error: "Pickup and drop are required" });
+    if (!senderName || !receiverName || !pickupText || !dropText) {
+      return res.status(400).json({ success: false, error: "Sender name, receiver name, pickup, and drop are required" });
     }
 
     const pickupPoint = await geocode(pickupText);
@@ -149,6 +153,8 @@ app.post("/create", async (req, res) => {
 
     await Shipment.create({
       trackingId,
+      senderName,
+      receiverName,
       pickupText,
       dropText,
       pickup: pickupPoint,
