@@ -12,11 +12,20 @@
   <div id="navbar"></div>
 
   <main class="page">
-    <div class="track-box">
-      <h2>🚛 Track Your Shipment</h2>
-      <input id="trackId" placeholder="Enter Tracking ID" />
-      <button onclick="startTracking()">Track</button>
-      <p id="msg"></p>
+    <div class="track-box track-hero-box">
+      <div class="track-hero-copy">
+        <span class="eyebrow">Shipment tracking</span>
+        <h2>🚛 Track Your Shipment</h2>
+        <input id="trackId" placeholder="Enter Tracking ID" />
+        <button onclick="startTracking()">Track</button>
+        <p id="msg"></p>
+      </div>
+     
+      <div class="map-preview-wrap">
+    <div class="map-preview-image">
+      <img src="https://images.unsplash.com/photo-1616401784845-180882ba9ba8?auto=format&fit=crop&w=1200&q=85" alt="Delivery driver carrying a parcel" />
+      <div class="route-line"></div>
+      <div class="truck-animation"></div>
     </div>
 
     <div id="map" style="display:none; height:400px;"></div>
@@ -26,10 +35,22 @@
     <h2>Trusted Logistics Network</h2>
     <p>We connect businesses with fast, reliable, and real-time tracked trucking services across the country.</p>
     <div class="trust-grid">
-      <div class="trust-card">⚡ Fast Dispatch in under 5 min</div>
-      <div class="trust-card">📍 Real-time GPS Tracking</div>
-      <div class="trust-card">🔒 Secure & Verified Drivers</div>
-      <div class="trust-card">📦 Nationwide Delivery Coverage</div>
+      <div class="trust-card">
+        <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80" alt="Dispatch" />
+        <span>⚡ Fast Dispatch in under 5 min</span>
+      </div>
+      <div class="trust-card">
+        <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=800&q=80" alt="Live GPS tracking" />
+        <span>📍 Real-time GPS Tracking</span>
+      </div>
+      <div class="trust-card">
+        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" alt="Verified driver" />
+        <span>🔒 Secure & Verified Drivers</span>
+      </div>
+      <div class="trust-card">
+        <img src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=800&q=80" alt="Courier route" />
+        <span>📦 Nationwide Delivery Coverage</span>
+      </div>
     </div>
   </section>
 
@@ -46,7 +67,6 @@
   <section class="live-preview">
     <h2>Live Shipment Preview</h2>
     <p>Track your delivery in real-time with GPS precision.</p>
-    <div class="map-preview">🚛 Moving Truck Simulation Active</div>
     <a class="btn" href="booking.html">Book Truck</a>
   </section>
 
@@ -87,7 +107,7 @@
     <div>
       <h4>Contact</h4>
       <p>Email: support@truckflow.com</p>
-      <p>Phone: +1 234 567 890</p>
+      <p>Phone: +1 213 545 2021</p>
     </div>
   </footer>
 
@@ -98,6 +118,7 @@
     const API = window.location.origin;
     let map, marker;
     let pollTimer = null;
+    const geoCache = new Map();
 
     async function readJsonSafe(res) {
       try { return await res.json(); } catch { return {}; }
@@ -114,6 +135,40 @@
         marker.setLatLng([point.lat, point.lng]);
         map.panTo([point.lat, point.lng]);
       }
+    }
+
+    async function pointToCity(point) {
+      if (!point || typeof point.lat !== "number" || typeof point.lng !== "number") {
+        return "Unknown location";
+      }
+
+      const key = `${point.lat.toFixed(4)},${point.lng.toFixed(4)}`;
+      if (geoCache.has(key)) return geoCache.get(key);
+
+      try {
+        const res = await fetch(
+          `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${point.lat}&longitude=${point.lng}&localityLanguage=en`
+        );
+        const data = await res.json();
+        const location =
+          data.city ||
+          data.locality ||
+          data.principalSubdivision ||
+          data.countryName ||
+          `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
+
+        geoCache.set(key, location);
+        return location;
+      } catch {
+        return `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`;
+      }
+    }
+
+    function getStopDisplay(reason) {
+      if (reason === "Truck Resting") return "💤 Stopped (⛔ Truck Resting)";
+      if (reason === "IN-TRANSIT") return "🚛 (In Transit to destination )";
+      if (reason === "Incomplete Custom Document") return "📄 ( ⛔ Stopped Incomplete Custom Document)";
+      return `⛔ Stopped (${reason || "Stopped"})`;
     }
 
     async function startTracking() {
@@ -148,7 +203,15 @@
 
       document.getElementById("map").style.display = "block";
       updateMap(loc);
-      msg.innerText = `ℹ️ Status: ${ship.status || "Created"}${ship.pauseReason ? ` (${ship.pauseReason})` : ""}`;
+      if (ship.status === "In Transit") {
+        const currentCity = await pointToCity(loc);
+        msg.innerText = `🚛 Moving: ${currentCity}`;
+      } else if (ship.status === "Paused") {
+        const display = getStopDisplay(ship.pauseReason);
+        msg.innerText = display;
+      } else {
+        msg.innerText = `ℹ️ Status: ${ship.status || "Created"}${ship.pauseReason ? ` (${ship.pauseReason})` : ""}`;
+      }
 
       pollTimer = setInterval(async () => {
         try {
@@ -163,9 +226,11 @@
           updateMap(p);
 
           if (s.status === "In Transit") {
-            msg.innerText = `🚛 Moving: ${p.lat.toFixed(4)}, ${p.lng.toFixed(4)}`;
+            const currentCity = await pointToCity(p);
+            msg.innerText = `🚛 Moving: ${currentCity}`;
           } else if (s.status === "Paused") {
-            msg.innerText = `⛔ Stopped${s.pauseReason ? ` (${s.pauseReason})` : ""}`;
+            const display = getStopDisplay(s.pauseReason);
+            msg.innerText = display;
           } else if (s.status === "Delivered") {
             msg.innerText = "✅ Delivered";
             clearInterval(pollTimer);

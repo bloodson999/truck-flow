@@ -25,7 +25,7 @@
       <p class="note">Use the custom stop reason for incomplete custom documents or one of the pause reasons below.</p>
       <div class="button-row">
         <button class="stop" onclick="stopTruck('Truck Resting')">STOP TRUCK RESTING</button>
-        <button class="stop" onclick="stopTruck('Traffic')">STOP TRAFFIC</button>
+        <button class="stop" onclick="stopTruck('IN-TRANSIT')">STOP TRAFFIC</button>
         <button class="stop" onclick="stopTruck('Incomplete Custom Document')">STOP INCOMPLETE CUSTOM DOCUMENT</button>
       </div>
       <button onclick="loadHistory()">VIEW TRACKING HISTORY</button>
@@ -180,6 +180,13 @@
     setMsg("🚛 Truck Started", "lime", "panelMsg");
   }
 
+  function getStopDisplay(reason) {
+    if (reason === "Truck Resting") return "💤 Stopped (⛔ Truck Resting)";
+    if (reason === "IN-TRANSIT") return "🚛 (In Transit to destination )";
+    if (reason === "Incomplete Custom Document") return "📄 ( ⛔ Stopped Incomplete Custom Document)";
+    return `⛔ Stopped (${reason || "Stopped"})`;
+  }
+
   async function stopTruck(reason = "Incomplete Custom Document") {
     const id = getTrackingId();
     if (!id) return setMsg("⚠️ Enter Tracking ID", "orange", "panelMsg");
@@ -193,7 +200,7 @@
     const data = await safeJson(res);
     if (!res.ok || !data.success) return setMsg(`❌ ${data.error || "Stop failed"}`, "red", "panelMsg");
 
-    setMsg(`⛔ Truck Stopped${reason ? ` (${reason})` : ""}`, "red", "panelMsg");
+    setMsg(getStopDisplay(reason), "red", "panelMsg");
   }
 
   async function updateLocation() {
@@ -234,7 +241,8 @@
     list.innerHTML = "<li>Loading city history...</li>";
 
     const currentCity = await pointToCity(s.location);
-    statusInfo.innerText = `Status: ${s.status}${s.pauseReason ? ` (${s.pauseReason})` : ""} | Current: ${currentCity}`;
+    const display = getStopDisplay(s.pauseReason);
+    statusInfo.innerText = `Status: ${s.status} ${display} | Current: ${currentCity}`;
 
     list.innerHTML = "";
     const history = Array.isArray(s.history) ? s.history : [];

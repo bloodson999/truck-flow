@@ -1,5 +1,5 @@
 {
-  "name": "truck-backend",
+  "name": "truck-flow",
   "version": "1.0.0",
   "main": "server.js",
   "type": "commonjs",

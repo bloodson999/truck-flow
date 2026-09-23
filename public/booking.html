@@ -14,17 +14,23 @@
 <main class="page">
 
   <section class="booking-hero">
-    <h1>Book a Truck in Seconds</h1>
-    <p>Fast pickup, safe delivery, real-time tracking included.</p>
+    <div class="booking-hero-layout">
+      <div class="booking-copy">
+        <span class="eyebrow">Book your freight</span>
+        <h1>Book a Truck in Seconds</h1>
+        <p>Fast pickup, safe delivery, real-time tracking included.</p>
+      </div>
+      <div class="booking-image-panel">
+        <img src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1200&q=80" alt="Truck dispatch" />
+      </div>
+    </div>
   </section>
 
   <section class="booking-section">
-
     <div class="booking-card">
       <h2>Shipment Details</h2>
 
       <form id="bookingForm">
-
         <input id="pickup" type="text" placeholder="Pickup Location" required>
         <input id="drop" type="text" placeholder="Drop Location" required>
         <input id="weight" type="number" placeholder="Weight (kg)" required>
@@ -36,12 +42,10 @@
         </select>
 
         <button type="submit">🚛 Request Truck</button>
-
       </form>
 
       <p id="msg"></p>
     </div>
-
   </section>
 
 </main>
@@ -53,10 +57,22 @@
   </p>
 
   <div class="trust-grid">
-    <div class="trust-card">⚡ Fast Dispatch in under 5 min</div>
-    <div class="trust-card">📍 Real-time GPS Tracking</div>
-    <div class="trust-card">🔒 Secure & Verified Drivers</div>
-    <div class="trust-card">📦 Nationwide Delivery Coverage</div>
+    <div class="trust-card">
+      <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80" alt="Dispatch team" />
+      <span>⚡ Fast Dispatch in under 5 min</span>
+    </div>
+    <div class="trust-card">
+      <img src="https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=800&q=80" alt="Courier delivery" />
+      <span>📍 Real-time GPS Tracking</span>
+    </div>
+    <div class="trust-card">
+      <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&q=80" alt="Logistics team" />
+      <span>🔒 Secure & Verified Drivers</span>
+    </div>
+    <div class="trust-card">
+      <img src="https://images.unsplash.com/photo-1520607162513-77705c0f0d4a?auto=format&fit=crop&w=800&q=80" alt="Delivery route" />
+      <span>📦 Nationwide Delivery Coverage</span>
+    </div>
   </div>
 </section>
 
@@ -96,9 +112,6 @@
   <h2>Live Shipment Preview</h2>
   <p>Track your delivery in real-time with GPS precision.</p>
 
-  <div class="map-preview">
-    🚛 Moving Truck Simulation Active
-  </div>
   <a class="btn" href="tracking.html">Track Shipment</a>
 </section>
 
@@ -158,7 +171,7 @@
   <div>
     <h4>Contact</h4>
     <p>Email: support@truckflow.com</p>
-    <p>Phone: +1 234 567 890</p>
+   <p>Phone: +1 213 545 2021</p>
   </div>
 </footer>
 
