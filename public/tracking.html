@@ -171,7 +171,7 @@
 
     function getStopDisplay(reason) {
       if (reason === "Truck Resting") return "💤 Stopped (⛔ Truck Resting)";
-      if (reason === "IN-TRANSIT") return "🚛 (In Transit to destination )";
+      if (reason === "IN-TRANSIT") return "⛔ Stopped (can't continue in transit to destination)";
       if (reason === "Incomplete Custom Document") return "📄 ( ⛔ Stopped Incomplete Custom Document)";
       return `⛔ Stopped (${reason || "Stopped"})`;
     }
